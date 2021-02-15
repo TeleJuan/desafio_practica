@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es">
+ 
+<head>
+    <title>Hello, world!</title>
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+	<link rel="stylesheet" href="http://localhost:3000/indexcss">
+
+</head>
+ 
+<body style="background-color:darkblue">
+	<div style="padding-top: 50px"></div>
+
+	<div class="container" style="background-color: rgba(240,248,255,1); vertical-align:center"  >
+    <form>
+        <div class="container">
+            <label>nombre</label>
+            <input id="nombre" name="nombre" type="text" >
+            
+        </div>
+        <div class="container">
+            <label>Desde</label>
+            <input type="date" name="init" max="" id="desde">
+            <br><br>
+            <label>Hasta</label>
+            <input type="date" name="end" max="" id="hasta">
+        </div>
+
+        <div>
+            <button id="buscar" style="padding-top: 20px;"> Buscar</button>
+        </div>
+
+        <div>
+            <p id="miss_date" style="display: none;padding-top: 20px;">ERROR: Falta seleccionar fecha inicio o termino del rango.</p>
+        </div>
+
+        <div>
+            <p id="wrong_date" style="display: none;padding-top: 20px;">ERROR: Fecha de inicio mayor a fecha del termino del rango.</p>
+        </div>
+
+        <div>
+            <p id="result_p" style="display: none;font-size: 20px;align-items:center;padding-top: 20px;">Encuestas encontradas: <span id="result"></span></p>
+        </div>
+
+    </div>
+    </form> 
+
+</body>
+<script>
+    $('input[name=nombre]').val("");
+    $('input[name=init]').val("");
+    $('input[name=end]').val("");
+
+    var data = {
+        'name':'',
+        'init':'',
+        'end':'',
+    }
+
+    var final={}
+
+    $('input[name=nombre]').change(function() { data['name'] = $('input[name=nombre]').val() });
+    $('input[name=init]').change(function() { 
+        data['init']=$('input[name=init]').val() 
+        $('#miss_date').css('display', 'none');
+        $('#wrong_date').css('display', 'none');
+        $('#result_p').css('display', 'none');
+    });
+    $('input[name=end]').change(function() { 
+        data['end']=$('input[name=end]').val() 
+        $('#miss_date').css('display', 'none');
+        $('#wrong_date').css('display', 'none');
+        $('#result_p').css('display', 'none');
+    });
+
+    $('#buscar').click(function(e) {
+        e.preventDefault();
+        if(data['init']=="" && data['end']==""&&data['name']==""){return false}
+        if(data['init']!="" && data['end']=="" || data['end']!="" && data['init']=="" ){
+            $('#miss_date').css('display', '');
+            return false;
+        }
+        
+        url="http://localhost:3000/getusers?"
+        if(data['name']!=""){
+            final['name'] = data['name'];
+        }
+
+        if(data['init']!="" && data['end']!=""){
+            var from  = new Date(data['init'])
+            from = from.getTime();
+            var to  = new Date(data['end']);
+            to = to.getTime() + (23*60*60+59*60+59)*1000 - 4*60*60*1000;
+        
+            if(from>to){
+                $('#wrong_date').css('display', '');
+                return false;
+            }
+            final['init'] = data['init'];
+            final['end'] = data['end'];
+            final['dates']=1;
+        }
+
+        let query = new URLSearchParams(final).toString();
+        
+        data = {
+            'name':'',
+            'init':'',
+            'end':'',
+        }
+        final={}
+        $('input[name=nombre]').val("");
+        $('input[name=init]').val("");
+        $('input[name=end]').val("");
+
+        console.log(query);
+
+        $.ajax({
+        url: "/getusers?"+query,
+        type: 'GET',
+        success: function(res) {
+            result= JSON.parse(res);
+            $('#result').text(result['count']);
+            $('#result_p').css('display', '');
+
+        }
+    })
+
+        return false;
+        
+
+    });
+
+</script>
+
+ 
+</html>
