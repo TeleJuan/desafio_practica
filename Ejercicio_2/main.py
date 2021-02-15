@@ -3,7 +3,7 @@ import json
 
 from fpdf import FPDF
 from itertools import cycle
-
+from datetime import datetime
 
 data = ""
 dict_name = "5c7dd876-39e4-425b-86bd-6a43adcf95d5"
@@ -74,21 +74,14 @@ def get_users(cur):
             users_dict[company_name]=list()
         
 
-        #TODO: añadir soporte para diccionarios de nombres diferentes
-        #if dict_name not in user[3].keys():    
-        #    continue
-
         cont = 0
         for k in user[3].keys():    
             dict_name = k
             cont+=1 
 
-        #if cont>1:
-        #    print("usuario con dos diccionarios!!")
-        #    print( user[3] )
-        #    print("\n")
 
-        rut = user[3][dict_name]['rut'] # TODO: darle formato al rut , verificar si el rut es valido ... 
+
+        rut = user[3][dict_name]['rut'] 
         rut = rut[:-1] + '-' + rut[-1:]
         
         if not validarRut(rut):
@@ -98,38 +91,35 @@ def get_users(cur):
         date = ""
         time = ""
         if last_login != "":
+            utc_time = datetime.strptime(last_login, "%Y-%m-%dT%H:%M:%SZ")
+            epoch_time = (utc_time - datetime(1970, 1, 1)).total_seconds()
+            last_login = datetime.fromtimestamp(epoch_time).strftime('%Y-%m-%dT%H:%M:%S')
+            print(last_login)
             date = last_login.split('T')[0]
             time = last_login.split('T')[1]
-        
+            print(date,time)
         username = user[0]
         if " " in username:
             username = username.split(' ')[0]
 
-        users_dict[company_name].append((username,user[1],rut,date + ' ' + time))
+        tupla =  (username,user[1],rut,date + ' ' + time)
+        print(tupla)
+        users_dict[company_name].append(tupla)
 
     return users_dict
 
 def set_header(pdf,title):
     # Logo
     pdf.image('.\images\logo.png', 10, 8, 33)
-    # Arial bold 15
     pdf.set_font('Arial', 'BU', 15)
-    # Move to the right
     pdf.cell(80)
-    # Title
     pdf.cell(30, 10, title, '', 0, 'C')
-    # Line break
     pdf.ln(20)
 
 class PDF(FPDF):
-
-    # Page footer
     def footer(self):
-        # Position at 1.5 cm from bottom
         self.set_y(-15)
-        # Arial italic 8
         self.set_font('Arial', 'I', 8)
-        # Page number
         self.cell(0, 10, 'Page ' + str(self.page_no()) + '/{nb}', 0, 0, 'C')
 
 
