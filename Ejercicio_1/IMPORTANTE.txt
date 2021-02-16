@@ -1,0 +1,5 @@
+Dado que hubieron problemas con el certificado SSL (como se ve en la imagen adjunta) al crear el sitio web de manera local, se optó por descargar la base de datos usando el siguiente comando:
+  pg_dump -h "ec2-34-193-235-244.compute-1.amazonaws.com" -U u8h1gv1545k7vm -f dump.sql dbj89j7c994jjn
+Luego de esto se instaló postgres en el computador y se montó la base de datos descargada, cambiando el host original por "localhost". 
+
+Para efectos practicos, al tener el certificado SSL con el host original, deberia funcionar de la misma forma
