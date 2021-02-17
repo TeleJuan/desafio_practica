@@ -53,62 +53,69 @@
 
 </body>
 <script>
+    //al cargar la pagina se resetean los inputs
     $('input[name=nombre]').val("");
     $('input[name=init]').val("");
     $('input[name=end]').val("");
 
+    // map que almacena los valores de los inputs
     var data = {
         'name':'',
         'init':'',
         'end':'',
-    }
+    };
 
-    var final={}
+    var final={}; //map que almacena los valores finales de los inputs y con los cuales se genera la query
 
-    $('input[name=nombre]').change(function() { data['name'] = $('input[name=nombre]').val() });
+    $('input[name=nombre]').change(function() { 
+        data['name'] = $('input[name=nombre]').val()  //se almacena el valor del nombre
+        $('#result_p').css('display', 'none'); // de estar mostrando un resultado, este se oculta
+    });
     $('input[name=init]').change(function() { 
-        data['init']=$('input[name=init]').val() 
-        $('#miss_date').css('display', 'none');
-        $('#wrong_date').css('display', 'none');
-        $('#result_p').css('display', 'none');
+        data['init']=$('input[name=init]').val()  // se almacena el valor de la fecha de inicio del rango
+        $('#miss_date').css('display', 'none');  // al modificarse la fecha de inicio el rango, se oculta el error de fecha faltante
+        $('#wrong_date').css('display', 'none'); // al haber  un error en las fechas y modificarse, se oculta el error 
+        $('#result_p').css('display', 'none'); // de estar mostrando un resultado, este se oculta
     });
-    $('input[name=end]').change(function() { 
-        data['end']=$('input[name=end]').val() 
+    $('input[name=end]').change(function() {  
+        data['end']=$('input[name=end]').val() // se almacena el valor de la fecha de fin del rango
         $('#miss_date').css('display', 'none');
         $('#wrong_date').css('display', 'none');
         $('#result_p').css('display', 'none');
     });
 
-    $('#buscar').click(function(e) {
+    $('#buscar').click(function(e) { // funcion que se ejecuta al presionar al boton "buscar"
         e.preventDefault();
-        if(data['init']=="" && data['end']==""&&data['name']==""){return false}
+        if(data['init']=="" && data['end']==""&&data['name']==""){return false} // si no hay valores seleccionados, no pasa nada
         if(data['init']!="" && data['end']=="" || data['end']!="" && data['init']=="" ){
-            $('#miss_date').css('display', '');
+            $('#miss_date').css('display', ''); //si solo se selecciona una de ambas fechas, muestra uun mensaje de error
             return false;
         }
         
-        url="http://localhost:3000/getusers?"
+        url="http://localhost:3000/getusers?" // url del servidor donde se cuentan las encuestas 
         if(data['name']!=""){
-            final['name'] = data['name'];
+            final['name'] = data['name']; // se guarda el nombre en el map final
         }
 
         if(data['init']!="" && data['end']!=""){
             var from  = new Date(data['init'])
             from = from.getTime();
             var to  = new Date(data['end']);
-            to = to.getTime() + (23*60*60+59*60+59)*1000 - 4*60*60*1000;
+            to = to.getTime() + (23*60*60+59*60+59)*1000 - 4*60*60*1000; 
         
-            if(from>to){
-                $('#wrong_date').css('display', '');
+            if(from>to){ //se comprueba que la fecha de termino del rango sea mayor que la fecha de inicio
+                $('#wrong_date').css('display', '');  // de no ser asi, se muestra un error
                 return false;
             }
+            // se almacenan los valores finales
             final['init'] = data['init'];
             final['end'] = data['end'];
-            final['dates']=1;
+            final['dates']=1; //flag que indica al sevidor que van fechas en la query de la url
         }
 
-        let query = new URLSearchParams(final).toString();
+        let query = new URLSearchParams(final).toString(); // el map final se transforma en una query para hacer la peticion get
         
+        //se resetean todos los valores 
         data = {
             'name':'',
             'init':'',
@@ -119,15 +126,15 @@
         $('input[name=init]').val("");
         $('input[name=end]').val("");
 
-        console.log(query);
+        console.log(query); //para verificar, se muestra la query por consola
 
-        $.ajax({
+        $.ajax({ // Se ejecuta la peticion get al servidor con la query correspondiente
         url: "/getusers?"+query,
         type: 'GET',
-        success: function(res) {
-            result= JSON.parse(res);
-            $('#result').text(result['count']);
-            $('#result_p').css('display', '');
+        success: function(res) { 
+            result= JSON.parse(res); //el servidor responde con un json en formato texto, se debe usar la funcion parse
+            $('#result').text(result['count']); //se modifica el valor del mensaje que indica el numero de personas contabilizadas
+            $('#result_p').css('display', ''); // se muestra el conteo
 
         }
     })

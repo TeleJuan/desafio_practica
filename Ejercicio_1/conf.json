@@ -1,5 +1,6 @@
 {
     "ENDPOINT":"localhost",
+    "ENDPOINT_REAL":"ec2-34-193-235-244.compute-1.amazonaws.com",
     "PORT":"5432",
     "USR":"u8h1gv1545k7vm",
     "REGION":"",
